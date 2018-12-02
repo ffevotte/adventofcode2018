@@ -1,0 +1,7 @@
+name = "Day1"
+uuid = "64f8e2d8-f66a-11e8-10b8-f131aa49e488"
+authors = ["francois "]
+version = "0.1.0"
+
+[deps]
+Lazy = "50d2b5c4-7a5e-59d5-8109-a42b560f39c0"
