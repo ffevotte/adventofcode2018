@@ -12,7 +12,7 @@ function parseLine(l)
 end
 
 function events()
-    open("input") do f
+    open("input4") do f
         @as x eachline(f) begin
             map(parseLine, x)
             sort(x, lt=(x,y)->(x[1]<y[1]))

@@ -5,7 +5,7 @@ export part1, part2, rects
 using Lazy
 
 function rects()
-    open("input") do f
+    open("input3") do f
         map(eachline(f)) do l
             @as x l begin
                 split(x, " ")

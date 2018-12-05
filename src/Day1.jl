@@ -4,7 +4,7 @@ export part1, part2
 using Lazy
 
 function part1()
-    @>> "input" begin
+    @>> "input1" begin
         eachline
         map(x->parse(Int64,x))
         sum
@@ -16,7 +16,7 @@ function part2()
         s = 0
         found = false
         while(!found)
-            open("input") do f
+            open("input1") do f
                 for x in eachline(f)
                     x = parse(Int64, x)
                     s += x

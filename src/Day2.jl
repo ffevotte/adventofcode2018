@@ -33,7 +33,7 @@ end
 
 function part1()
     c = (0,0)
-    open("input") do f
+    open("input2") do f
         for word in eachline(f)
             c = c .+ count(word)
         end
@@ -42,7 +42,7 @@ function part1()
 end
 
 function part2()
-    words = open(f->collect(eachline(f)), "input")
+    words = open(f->collect(eachline(f)), "input2")
 
     for i = 1:length(words)-1
         w1 = words[i]

@@ -21,11 +21,11 @@ function collapsedLength(p)
 end
 
 function part1()
-    open(x->read(x,String), "input") |> chomp |> collapsedLength
+    open(x->read(x,String), "input5") |> chomp |> collapsedLength
 end
 
 function part2()
-    polymer = open(x->read(x,String), "input") |> chomp
+    polymer = open(x->read(x,String), "input5") |> chomp
     best = 100000
 
     for char in 'a':'z'
