@@ -3,6 +3,7 @@ using AOC.Day2
 using AOC.Day3
 using AOC.Day4
 using AOC.Day5
+using AOC.Day6
 
 using Test
 
@@ -30,5 +31,9 @@ using Test
     @testset "Day5" begin
         @test Day5.part1() == 9526
         @test Day5.part2() == 6694
+    end
+
+    @testset "Day6" begin
+        @test Day6.puzzle() == (3223, 40495)
     end
 end
