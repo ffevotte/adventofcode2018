@@ -1,6 +1,5 @@
 module Day7
-export part1, part2
-export Node, addDep!, readGraph
+export puzzle
 
 using Lazy
 
@@ -13,7 +12,6 @@ end
 
 Node(name) = Node(name, 0, [], name-'A'+61)
 Base.isless(n1::Node, n2::Node) = (n1.ndeps < n2.ndeps) || (n1.ndeps == n2.ndeps && n1.name < n2.name)
-
 
 function addDep!(graph, name1, name2)
     n1 = get(graph, name1, Node(name1))
@@ -37,36 +35,14 @@ function readGraph()
     graph
 end
 
-function part1()
-    graph = readGraph()
-    ans = ""
-
-    while true
-        n = minimum(values(graph))
-        if n.ndeps != 0
-            break
-        end
-
-        for n2 in n.succ
-            graph[n2].ndeps -= 1
-        end
-
-        # println(n)
-        n.ndeps = typemax(Int64)
-        ans *= n.name
-    end
-
-    ans
-end
-
-function part2()
+function puzzle(nW)
     graph = readGraph()
 
-    nW = 5
     t = 0
     w = ['-' for i in 1:nW]
     active = 0
-    for k in 1:10000
+    sequence = ""
+    while true
         if minimum(values(graph)).ndeps == typemax(Int64) && active == 0
             break
         end
@@ -75,6 +51,7 @@ function part2()
             if w[i] == '-'
                 n = minimum(values(graph))
                 if n.ndeps == 0
+                    sequence *= n.name
                     w[i] = n.name
                     n.ndeps = typemax(Int64)
                     active += 1
@@ -103,7 +80,7 @@ function part2()
         t += 1
     end
 
-    t
+    (sequence,t)
 end
 
 end # module

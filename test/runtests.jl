@@ -39,7 +39,7 @@ using Test
     end
 
     @testset "Day7" begin
-        @test Day7.part1() == "GLMVWXZDKOUCEJRHFAPITSBQNY"
-        @test Day7.part2() == 1105
+        @test Day7.puzzle(1)[1] == "GLMVWXZDKOUCEJRHFAPITSBQNY"
+        @test Day7.puzzle(5)[2] == 1105
     end
 end
