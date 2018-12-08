@@ -12,25 +12,24 @@ function part1()
 end
 
 function part2()
-    let l = [0] ::Array{Int64,1}
-        s = 0
-        found = false
-        while(!found)
-            open("input1") do f
-                for x in eachline(f)
-                    x = parse(Int64, x)
-                    s += x
-                    if s in l
-                        found = true
-                        return s
-                    else
-                        push!(l, s)
-                    end
+    l = Set([0])
+    s = 0
+    found = false
+    while(!found)
+        open("input1") do f
+            for x in eachline(f)
+                x = parse(Int64, x)
+                s += x
+                if s in l
+                    found = true
+                    return s
+                else
+                    push!(l, s)
                 end
             end
         end
-        s
     end
+    s
 end
 
 

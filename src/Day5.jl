@@ -3,50 +3,29 @@ export part1, part2
 
 using Lazy
 
-
-function collapsedLength(p)
-    old = ""
-    new = p
-    while old != new
-        old = new
-        for char in 'a':'z'
-            CHAR = uppercase(char)
-            new = @> new begin
-                replace(char*CHAR => "")
-                replace(CHAR*char => "")
-            end
+function collapsedLength(p; ignore='-')
+    collapsed = []
+    curr = '-'
+    for next in p
+        if uppercase(next) == ignore
+            continue
+        elseif uppercase(curr) == uppercase(next) && curr != next
+            curr = pop!(collapsed)
+        else
+            push!(collapsed, curr)
+            curr = next
         end
     end
-    length(new)
+    length(collapsed)
 end
 
 function part1()
-    open(x->read(x,String), "input5") |> chomp |> collapsedLength
+    open(x->read(x,String), "input5") |> chomp |> collect |> collapsedLength
 end
 
 function part2()
     polymer = open(x->read(x,String), "input5") |> chomp
-    best = 100000
-
-    for char in 'a':'z'
-        CHAR = uppercase(char)
-        length = @> polymer begin
-            replace(char => "")
-            replace(CHAR => "")
-            collapsedLength()
-        end
-
-        if length < best
-            best = length
-        end
-    end
-
-    best
+    minimum([collapsedLength(polymer; ignore=char) for char in 'A':'Z'])
 end
-
-
-
-
-
 
 end # module
