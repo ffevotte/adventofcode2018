@@ -1,13 +1,31 @@
 using Test
 using BenchmarkTools
+using Lazy
+import Statistics: mean
 
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 2
 BenchmarkTools.DEFAULT_PARAMETERS.seconds = 1
 
+
+@> ["Title",
+   "Mb",
+   "allocs",
+   "ms"] begin
+       join("\t")
+       println
+   end
 macro btest(title, expr)
     quote
-        println($title)
-        @test @btime $expr
+        @test $expr
+        r = @benchmark $expr
+        @as __ [$title,
+                round(r.memory/(1024^2); digits=2),
+                r.allocs,
+                round(mean(r.times)/1000000; digits=2)] begin
+                    map(string, __)
+                    join(__, "\t")
+                    println(__)
+               end
     end
 end
 
