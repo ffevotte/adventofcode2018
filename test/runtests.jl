@@ -17,15 +17,17 @@ BenchmarkTools.DEFAULT_PARAMETERS.seconds = 1
 macro btest(title, expr)
     quote
         @test $expr
-        r = @benchmark $expr
-        @as __ [$title,
-                round(r.memory/(1024^2); digits=2),
-                r.allocs,
-                round(mean(r.times)/1000000; digits=2)] begin
-                    map(string, __)
-                    join(__, "\t")
-                    println(__)
-               end
+        if startswith($title, "")
+            r = @benchmark $expr
+            @as __ [$title,
+                    round(r.memory/(1024^2); digits=2),
+                    r.allocs,
+                    round(mean(r.times)/1000000; digits=2)] begin
+                        map(string, __)
+                        join(__, "\t")
+                        println(__)
+                    end
+        end
     end
 end
 
@@ -75,5 +77,11 @@ end
     @testset "Day8" begin
         @btest "8.1" Day8.part1() == 49180
         @btest "8.2" Day8.part2() == 20611
+    end
+
+    using AOC.Day9
+    @testset "Day9" begin
+        @btest "9.1" Day9.puzzle(405, 71700)   == 428690
+        @btest "9.2" Day9.puzzle(405, 7170000) == 3628143500
     end
 end
