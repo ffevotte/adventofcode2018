@@ -84,4 +84,10 @@ end
         @btest "9.1" Day9.puzzle(405, 71700)   == 428690
         @btest "9.2" Day9.puzzle(405, 7170000) == 3628143500
     end
+
+    using AOC.Day10
+    @testset "Day10" begin
+        # Day10.puzzle()[1] |> println
+        @btest "10" Day10.puzzle()[2] == 10036
+    end
 end
