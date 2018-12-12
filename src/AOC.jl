@@ -11,5 +11,6 @@ include("Day8.jl")
 include("Day9.jl")
 include("Day10.jl")
 include("Day11.jl")
+include("Day12.jl")
 
 end # module
