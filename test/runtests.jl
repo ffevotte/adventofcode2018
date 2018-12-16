@@ -108,4 +108,10 @@ end
         @btest "13.1" Day13.part1() == (119, 41)
         @btest "13.2" Day13.part2() == (45, 136)
     end
+
+    using AOC.Day14
+    @testset "Day14" begin
+        @btest "14.1" Day14.part1(323081)   == "7162937112"
+        @btest "14.2" Day14.part2("323081") == 20195890
+    end
 end
