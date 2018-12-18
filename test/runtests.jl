@@ -16,8 +16,8 @@ BenchmarkTools.DEFAULT_PARAMETERS.seconds = 1
    end
 macro btest(title, expr)
     quote
-        @test $expr
         if startswith($title, "")
+            @test $expr
             r = @benchmark $expr
             @as __ [$title,
                     round(r.memory/(1024^2); digits=2),
@@ -119,5 +119,11 @@ end
     @testset "Day15" begin
         @btest "15.1" Day15.part1() == 216270
         @btest "15.2" Day15.part2() == 59339
+    end
+
+    using AOC.Day16
+    @testset "Day16" begin
+        @btest "16.1" Day16.part1() == 531
+        @btest "16.2" Day16.part2() == 649
     end
 end
