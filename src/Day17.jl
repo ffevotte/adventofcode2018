@@ -4,16 +4,90 @@ export part1, part2, puzzle
 using Lazy
 using DataStructures
 
-
 toInt(x) = parse(Int, x)
-
 Base.minmax(x...) = extrema(x)
 
-function puzzle()
+function fillOnce(terrain, xSource, ySource)
+    # Can't fill any more from here; should go back to a higher level
+    if terrain[ySource, xSource] == '~'
+        return false
+    end
+
+    # Fall until hit clay or water
+    y = ySource
+    while true
+        y += 1
+        if y >= size(terrain, 1)
+            return true
+        elseif terrain[y,xSource] in "#~"
+            y -= 1
+            break
+        end
+        terrain[y,xSource] = '|'
+    end
+
+    # Look for a barrier on the left
+    left = false
+    x = xSource
+    while true
+        x -= 1
+        if terrain[y+1, x] in ".|"
+            break
+        elseif terrain[y, x] == '#'
+            x += 1
+            left = true
+            break
+        end
+    end
+    x1 = x
+
+    # Look for a barrier on the right
+    right = false
+    x = xSource
+    while true
+        x += 1
+        if terrain[y+1, x] in ".|"
+            break
+        elseif terrain[y, x] == '#'
+            x -= 1
+            right = true
+            break
+        end
+    end
+    x2 = x
+
+    if left && right
+        # Barriers on both sides -> continue filling by recursing
+        fill!(view(terrain, y, x1:x2), '~')
+        # If recursive call fails, nothing can be done at this level
+        return fillOnce(terrain, xSource, ySource)
+    else
+        # Water flows somewhere else
+        fill!(view(terrain, y, x1:x2), '|')
+
+        # Water flow from the left extremity
+        if !left
+            # If recursive call fails, try replaying the current level before giving up
+            fillOnce(terrain, x1, y) ||
+                fillOnce(terrain, xSource, ySource) ||
+                return false
+        end
+
+        # Water flow from the left extremity
+        if !right
+            # If recursive call fails, try replaying the current level before giving up
+            fillOnce(terrain, x2, y) ||
+                fillOnce(terrain, xSource, ySource) ||
+                return false
+        end
+    end
+
+    true
+end
+
+function readTerrain(input)
     x = (500,500)
     y = ()
-
-    input = "input17"
 
     foreach(eachline(input)) do l
         m = match(r"x=(\d+), y=(\d+)..(\d+)", l)
@@ -31,16 +105,15 @@ function puzzle()
         end
     end
 
-    YMIN = y[1]
+    nDiscard = y[1]
     y = minmax(y..., 0)
 
     xMin = x[1] - 2
     yMin = y[1] - 2
-    YMIN -= yMin+1
+    nDiscard -= yMin+1
 
     terrain = Array{Char, 2}(undef, y[2]+1-yMin, x[2]+1-xMin)
     fill!(terrain, '.')
-    terrain[0-yMin, 500-xMin] = '+'
 
     foreach(eachline(input)) do l
         m = match(r"x=(\d+), y=(\d+)..(\d+)", l)
@@ -62,116 +135,31 @@ function puzzle()
         end
     end
 
-    # open("output17", "w") do f
-    #     for i in 1:size(terrain, 1)
-    #         write(f, terrain[i,:] |> String)
-    #         write(f, "\n")
-    #     end
-    # end
-    # return
+    terrain, xMin, yMin, nDiscard
+end
 
-    fillOnce(xSource, ySource) = begin
-        y = ySource
-        while y < size(terrain, 1)-1
-            y += 1
-            if terrain[y,xSource] in "#~"
-                y -= 1
-
-                left = false
-                x = xSource
-                while true
-                    x -= 1
-                    if terrain[y+1, x] in ".|S"
-                        break
-                    elseif terrain[y, x] == '#'
-                        x += 1
-                        left = true
-                        break
-                    end
-                end
-                x1 = x
-
-                right = false
-                x = xSource
-                while true
-                    x += 1
-                    if terrain[y+1, x] in ".|S"
-                        break
-                    elseif terrain[y, x] == '#'
-                        x -= 1
-                        right = true
-                        break
-                    end
-                end
-                x2 = x
-
-                if left && right
-                    fill!(view(terrain, y, x1:x2), '~')
-                else
-                    fill!(view(terrain, y, x1:x2), '|')
-                end
-
-                ret = []
-                if !left
-                    push!(ret, (x1, y))
-                end
-                if !right
-                    push!(ret, (x2, y))
-                end
-
-                return ret
-            end
-
-            terrain[y,xSource] = '|'
-        end
-    end
-
-    sources = Deque{Tuple{Int32, Int32}}()
-    stalled = true
-    while stalled
-
-        open("output17", "w") do f
-            for i in 1:size(terrain, 1)
-                write(f, terrain[i,:] |> String)
-                write(f, "\n")
-            end
-        end
-        println("LOOP")
-
-        stalled = false
-        push!(sources, (500-xMin, 0-yMin))
-        while !isempty(sources)
-            (xSource, ySource) = popfirst!(sources)
-            i = 1
-            while i <= 20
-                new = fillOnce(xSource, ySource)
-
-                if new === nothing
-                    break
-                elseif !isempty(new)
-                    foreach(x->push!(sources, x), new)
-                    break
-                end
-
-                i += 1
-            end
-            if i >= 20
-                stalled = true
-            end
-        end
-    end
-
-    println()
+function output(terrain)
     open("output17", "w") do f
         for i in 1:size(terrain, 1)
             write(f, terrain[i,:] |> String)
             write(f, "\n")
         end
     end
+end
 
-    fill!(view(terrain, 1:YMIN, :), '*')
-    (count(c->c in "~|", terrain),
-     count(c->c == '~',  terrain))
+function puzzle()
+    terrain, xMin, yMin, nDiscard = readTerrain("input17")
+
+    terrain[0-yMin, 500-xMin] = '+'
+    output(terrain)
+
+    fillOnce(terrain, 500-xMin, 0-yMin)
+    output(terrain)
+
+    # Don't count the first layers, which are above measurement depths
+    fill!(view(terrain, 1:nDiscard, :), '*')
+    (count(c->c in "~|", terrain), # <- part 1
+     count(c->c == '~',  terrain)) # <- part 2
 end
 
 end # module

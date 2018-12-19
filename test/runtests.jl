@@ -126,4 +126,9 @@ end
         @btest "16.1" Day16.part1() == 531
         @btest "16.2" Day16.part2() == 649
     end
+
+    using AOC.Day17
+    @testset "Day17" begin
+        @btest "17" Day17.puzzle() == (30380, 25068)
+    end
 end
