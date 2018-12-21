@@ -137,4 +137,10 @@ end
         @btest "18.1" Day18.puzzle(10)         == 621205
         @btest "18.2" Day18.puzzle(1000000000) == 228490
     end
+
+    using AOC.Day19
+    @testset "Day19" begin
+        @btest "19.1" Day19.puzzle(0) == 1836
+        @btest "19.2" Day19.puzzle(1) == 18992556
+    end
 end
