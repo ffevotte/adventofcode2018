@@ -1,4 +1,8 @@
 module AOC
+export toInt
+
+toInt(x) = parse(Int, x)
+Base.minmax(x...) = extrema(x)
 
 include("Day1.jl")
 include("Day2.jl")

@@ -3,9 +3,7 @@ export part1, part2, puzzle
 
 using Lazy
 using DataStructures
-
-toInt(x) = parse(Int, x)
-Base.minmax(x...) = extrema(x)
+using AOC
 
 function fillOnce(terrain, xSource, ySource)
     # Can't fill any more from here; should go back to a higher level
