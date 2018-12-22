@@ -154,4 +154,9 @@ end
         @btest "21.1" Day21.puzzle(1)  == 4797782
         @btest "21.2" Day21.puzzle(-1) == 6086461
     end
+
+    using AOC.Day22
+    @testset "Day22" begin
+        @btest "22" Day22.puzzle(7863, 14, 760) == (11462, 1054)
+    end
 end
