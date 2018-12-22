@@ -148,4 +148,10 @@ end
     @testset "Day20" begin
         @btest "20" Day20.puzzle() == (4018, 8581)
     end
+
+    using AOC.Day21
+    @testset "Day21" begin
+        @btest "21.1" Day21.puzzle(1)  == 4797782
+        @btest "21.2" Day21.puzzle(-1) == 6086461
+    end
 end

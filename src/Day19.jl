@@ -6,8 +6,8 @@ using DataStructures
 using AOC
 using AOC.Day16: run
 
-function readProgram()
-    open("input19") do f
+function readProgram(name)
+    open(name) do f
         ipReg = @> readline(f) begin
             split(" ")
             x->x[2]
@@ -23,7 +23,7 @@ function readProgram()
 end
 
 function puzzle(initReg0)
-    ipReg, program = readProgram()
+    ipReg, program = readProgram("input19")
     registers = [0 for i in 1:6]
     registers[1] = initReg0
     ip = 0
