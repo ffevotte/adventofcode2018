@@ -165,4 +165,10 @@ end
         @btest "23.1" Day23.part1() == 652
         @btest "23.2" Day23.part2() == 164960498
     end
+
+    using AOC.Day24
+    @testset "Day24" begin
+        @btest "24.1" Day24.part1() == 16086
+        @btest "24.2" Day24.part2() == 3957
+    end
 end
