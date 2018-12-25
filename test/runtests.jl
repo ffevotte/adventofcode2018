@@ -2,31 +2,25 @@ using Test
 using BenchmarkTools
 using Lazy
 import Statistics: mean
+using Markdown: Table, MD
 
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 2
 BenchmarkTools.DEFAULT_PARAMETERS.seconds = 1
 
+table = [["Title", "Mem [Mb]", "Allocs", "Time [ms]"]]
+println(join(table[1], "\t"))
 
-@> ["Title",
-   "Mb",
-   "allocs",
-   "ms"] begin
-       join("\t")
-       println
-   end
 macro btest(title, expr)
     quote
         if startswith($title, "")
             @test $expr
             r = @benchmark $expr
-            @as __ [$title,
-                    round(r.memory/(1024^2); digits=2),
-                    r.allocs,
-                    round(mean(r.times)/1000000; digits=2)] begin
-                        map(string, __)
-                        join(__, "\t")
-                        println(__)
-                    end
+            row = string.([$title,
+                           round(r.memory/(1024^2); digits=2),
+                           r.allocs,
+                           round(mean(r.times)/1000000; digits=2)])
+            push!(table, row)
+            println(join(row, "\t"))
         end
     end
 end
@@ -177,3 +171,5 @@ end
         @btest "25" Day25.puzzle() == 388
     end
 end
+
+println(MD(Table(table, [:l,:r,:r,:r])))
