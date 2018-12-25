@@ -32,48 +32,18 @@ function part1()
     count(d->manhattan(d,dMax)<=dMax.r, drones)
 end
 
-function partition(range, n)
-    (i1,i2) = range
-    aux(c) = begin
-        i = i1
-        d, r = divrem(i2-i1+1, n)
-        for k in 1:r
-            ii = i+d
-            put!(c, (i,ii))
-            i = ii+1
-        end
-        d == 0 && return
-        for k in r+1:n
-            ii = i+d-1
-            put!(c, (i,ii))
-            i = ii+1
-        end
-    end
-    Channel(aux)
-end
-
-function score(x, y, z, d)
+function score(x, y, z, drones)
     x1,x2 = x
     y1,y2 = y
     z1,z2 = z
 
-    c = (div(x1+x2, 2),
-         div(y1+y2, 2),
-         div(z1+z2, 2))
-    diam = maximum(manhattan(c, p) for p in Iterators.product(x,y,z))
+    c = (div(x1+x2, 2), div(y1+y2, 2), div(z1+z2, 2))
+    rad = div(1+x2+y2+z2-(x1+y1+z1), 2)
 
-    dist = manhattan(c, pos(d))
-
-    if dist > d.r + diam
-        (0,0)
-    elseif dist <= d.r - diam
-        (1,1)
-    else
-        (0,1)
-    end
+    (sum(manhattan(c, pos(d)) > d.r + rad ? 0 : 1
+         for d in drones),
+     rad)
 end
-
-volume(x) = (1-(-(x[i]...)) for i in 1:3) |> prod |> abs
 
 function part2()
     drones = readInput("input23")
@@ -82,29 +52,33 @@ function part2()
     y = extrema(d.y for d in drones)
     z = extrema(d.z for d in drones)
 
-    aux(xx,yy,zz,s) = begin
-        for x in partition(xx,2)
-            for y in partition(yy,2)
-                for z in partition(zz,2)
-                    s = reduce((a,b)->a.+b,
-                               score(x,y,z,d) for d in drones)
-                    push!(l, (x,y,z, s))
+    aux(xx,yy,zz) = begin
+        (x1, x3) = x; x2 = div(x1+x3, 2)
+        (y1, y3) = y; y2 = div(y1+y3, 2)
+        (z1, z3) = z; z2 = div(z1+z3, 2)
+        for x in ((x1, x2), (x2+1, x3))
+            x[1]>x[2] && continue
+            for y in ((y1, y2), (y2+1, y3))
+                y[1]>y[2] && continue
+                for z in ((z1, z2), (z2+1, z3))
+                    z[1]>z[2] && continue
+                    s = score(x,y,z,drones)
+                    enqueue!(l, (x,y,z,s[2])=>s)
                 end
             end
         end
     end
 
-    l = [(x,y,z, (0,typemax(Int32)))]
-    bestMin = 0
-    while volume(l[end]) != 1
-        aux(pop!(l)...)
-        bestMin = maximum(x[4][1] for x in l)
-        filter!(x->x[4][2]>=bestMin, l)
-        sort!(l, by=x->(x[4][2], volume(x)))
-    end
-    filter!(x->x[4][1]>=bestMin, l)
+    l = PriorityQueue{typeof((x,y,z, x[1])), Tuple{Int,Int}}(
+        Base.Order.Reverse)
+    enqueue!(l, (x,y,z, 1)=>(1,1))
 
-    minimum(manhattan((x[1],y[1],z[1]), (0,0,0)) for (x,y,z,s) in l)
+    while true
+        (x,y,z, rad) = dequeue!(l)
+        rad == 0 &&
+            return manhattan((x[1], y[1], z[1]), (0,0,0))
+        aux(x,y,z)
+    end
 end
 
 end # module
