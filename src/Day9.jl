@@ -3,18 +3,17 @@ export part1, part2, puzzle
 
 using DataStructures
 
-function shift(ring, n)
-    f1 = push!
-    f2 = popfirst!
-    if n<0
-        n = -n
-        f1 = pushfirst!
-        f2 = pop!
-    end
-
+function shiftP(ring, n)
     for i in 1:n
-        x = f2(ring)
-        f1(ring, x)
+        x = popfirst!(ring)
+        push!(ring, x)
+    end
+end
+
+function shiftN(ring, n)
+    for i in 1:n
+        x = pop!(ring)
+        pushfirst!(ring, x)
     end
 end
 
@@ -24,11 +23,11 @@ function puzzle(nPlayer, nMarble)
 
     for marble = 1:nMarble
         if marble % 23 == 0
-            shift(ring, -7)
+            shiftN(ring, 7)
             score[1+marble%nPlayer] += marble + pop!(ring)
-            shift(ring, 1)
+            shiftP(ring, 1)
         else
-            shift(ring, 1)
+            shiftP(ring, 1)
             push!(ring, marble)
         end
         # @show ring
