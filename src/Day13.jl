@@ -9,7 +9,7 @@ function readInput()
         map(collect, eachline(f))
     end
 
-    carts = []
+    carts = Tuple{Int64,Int64,Char,Int64}[]
     for i in 1:length(tracks)
         row = tracks[i]
         for j = 1:length(row)
@@ -55,7 +55,7 @@ function step(tracks, cart, crash)
 
     c = tracks[iold][jold]
 
-    (i, j) = (iold, jold) .+ move[c]
+    (i, j) = (iold, jold) .+ move[c] ::Tuple{Int64,Int64}
     t = tracks[i][j]
 
     tracks[iold][jold] = old
@@ -101,7 +101,7 @@ function part2()
         end
 
         if crash[] != (-1,-1)
-            new_carts = []
+            new_carts = Tuple{Int64,Int64,Char,Int64}[]
 
             for (i, j, old, state) in carts
                 if tracks[i][j] != 'X'
@@ -124,6 +124,5 @@ function part2()
     (i,j, _, _) = carts[1]
     (j-1, i-1)
 end
-
 
 end # module
