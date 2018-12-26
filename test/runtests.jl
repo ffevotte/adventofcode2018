@@ -7,7 +7,7 @@ using Markdown: Table, MD
 BenchmarkTools.DEFAULT_PARAMETERS.samples = 2
 BenchmarkTools.DEFAULT_PARAMETERS.seconds = 1
 
-table = [["Title", "Mem [Mb]", "Allocs", "Time [ms]"]]
+table = [["Title", "Mem [MiB]", "Allocs", "Time [ms]"]]
 println(join(table[1], "\t"))
 
 macro btest(title, expr)
@@ -172,4 +172,6 @@ end
     end
 end
 
-println(MD(Table(table, [:l,:r,:r,:r])))
+open("perfs.md", "w") do f
+    write(f, string(MD(Table(table, [:l,:r,:r,:r]))))
+end
