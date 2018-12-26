@@ -44,11 +44,24 @@ function part2(sequence)
 
     while true
         elves = step(elves, recipes)
-        if recipes[end-length(sequence)+1:end] == sequence
-            return length(recipes)-length(sequence)
-        elseif recipes[end-length(sequence):end-1] == sequence
-            return length(recipes)-length(sequence)-1
+
+        ok = true
+        for i0 in 1:length(sequence)
+            if sequence[i0] != recipes[i0+length(recipes)-length(sequence)]
+                ok = false
+                break
+            end
         end
+        ok && return length(recipes)-length(sequence)
+
+        ok = true
+        for i0 in 1:length(sequence)
+            if sequence[i0] != recipes[i0+length(recipes)-length(sequence)-1]
+                ok = false
+                break
+            end
+        end
+        ok && return length(recipes)-length(sequence)-1
     end
 end
 
