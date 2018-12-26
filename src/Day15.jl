@@ -6,9 +6,9 @@ using DataStructures
 
 mutable struct Warrior
     typ :: Char
-    hp  :: Int32
-    i   :: Int32
-    j   :: Int32
+    hp  :: Int64
+    i   :: Int64
+    j   :: Int64
 end
 
 import Base.isless
@@ -38,12 +38,17 @@ function readMap()
     terrain, warriors
 end
 
-function buildMap(terrain, warriors)
-    t = deepcopy(terrain)
-    for w in warriors
-        t[w.i][w.j] = w.typ
+function updateMap(terrain, warriors)
+    for i in 1:length(terrain)
+        for j in 1:length(terrain[i])
+            if @inbounds terrain[i][j] in ('E', 'G', 'X')
+                @inbounds terrain[i][j] = '.'
+            end
+        end
     end
-    t
+    for w in warriors
+        @inbounds terrain[w.i][w.j] = w.typ
+    end
 end
 
 function display(title, terrain, warriors)
@@ -69,55 +74,53 @@ end
 #     end
 # end
 
-neighbours(i,j) = [
-    (i-1, j),
-    (i, j-1),
-    (i, j+1),
-    (i+1, j)
-]
+neighbours(i, j) = ((i-1, j),
+                    (i, j-1),
+                    (i, j+1),
+                    (i+1, j))
 
-function move(terrain, warriors, i)
-    w = warriors[i]
+function chooseOpp(terrain, w, dist)
     typ = w.typ
     opp = typ=='G' ? 'E' : 'G'
 
-    terrain = buildMap(terrain, warriors)
-    terrain[w.i][w.j] = 'X'
-
-    dist = typemax(Int32) * ones(Int32, length(terrain), length(terrain[1]))
-
-    l = Deque{Tuple{Int32,Int32,Int32}}()
+    l = Deque{Tuple{Int64,Int64,Int64}}()
     push!(l, (w.i, w.j,0))
 
-    chooseOpp() = begin
-        while !isempty(l)
-            (i,j,d) = popfirst!(l)
-            if terrain[i][j] in ['#', typ]
-                continue
-            elseif dist[i,j] < typemax(Int32)
-                continue
-            elseif terrain[i][j] == opp
-                dist[i,j] = d
-                return (i, j, d)
-            else
-                dist[i,j] = d
-                for (ii,jj) in neighbours(i,j)
-                    push!(l, (ii,jj,d+1))
-                end
+    while !isempty(l)
+        (i,j,d) = popfirst!(l)
+        if terrain[i][j] in ('#', typ)
+            continue
+        elseif dist[i,j] < typemax(Int64)
+            continue
+        elseif terrain[i][j] == opp
+            @inbounds dist[i,j] = d
+            return (i, j, d)
+        else
+            dist[i,j] = d
+            for (ii,jj) in neighbours(i,j)
+                push!(l, (ii,jj,d+1))
             end
         end
-        return (w.i, w.j, typemax(Int32))
     end
+    return (w.i, w.j, typemax(Int64))
+end
 
-    (i,j,d) = chooseOpp()
+function move(terrain, warriors, i)
+    w = warriors[i]
+    terrain[w.i][w.j] = 'X'
+
+    dist = typemax(Int64) * ones(Int64, length(terrain), length(terrain[1]))
+
+    (i,j,d) = chooseOpp(terrain, w, dist)
+
     if d == 1
         return
     end
-    if d == typemax(Int32)
+    if d == typemax(Int64)
         return
     end
 
-    l = Deque{Tuple{Int32,Int32}}()
+    l = Deque{Tuple{Int64,Int64}}()
     push!(l, (i,j))
     while !isempty(l)
         (i,j) = popfirst!(l)
@@ -167,6 +170,7 @@ function battle(terrain, warriors, PART, atk)
                 return (round-1) * reduce((x,w)->(x + w.hp), warriors; init=0)
             end
 
+            updateMap(terrain, warriors)
             move(terrain, warriors, k)
 
             target = Warrior('X', 201, 100, 100)
