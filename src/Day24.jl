@@ -6,21 +6,33 @@ using DataStructures
 using AOC
 
 mutable struct Group
-    id     :: Int32
-    army   :: Int32
-    units  :: Int32
-    hp     :: Int32
-    atk    :: Int32
-    typ    :: String
-    ini    :: Int32
-    weak   :: Array{String}
-    immune :: Array{String}
+    id     :: Int64
+    army   :: Int64
+    units  :: Int64
+    hp     :: Int64
+    atk    :: Int64
+    typ    :: Int64
+    ini    :: Int64
+    weak   :: Array{Int64, 1}
+    immune :: Array{Int64, 1}
 end
 
 function readInput(name)
     army = 0
-    armies = Dict{Int, Group}()
+    armies = Group[]
     id = 0
+
+    types = Dict{String, Int64}()
+    nTypes = 0
+    idType(name) = let id = get(types, String(name), 0)
+        if id == 0
+            nTypes += 1
+            types[name] = nTypes
+        else
+            id
+        end
+    end
+
     foreach(eachline(name)) do l
         if startswith(l, "Immune System")
             army = 1
@@ -31,38 +43,41 @@ function readInput(name)
             (units, hp, atk, ini) = toInt.((units, hp, atk, ini))
 
             weak = (m=match(r"weak to ([^;)]+)", special)) !== nothing ?
-                String.(split(m.captures[1], ", ")) :
+                [idType(name) for name in split(m.captures[1], ", ")] :
                 []
 
             immune = (m=match(r"immune to ([^;)]+)", special)) !== nothing ?
-                String.(split(m.captures[1], ", ")) :
+                [idType(name) for name in split(m.captures[1], ", ")] :
                 []
 
             id += 1
-            g = Group(id, army, units, hp, atk, typ, ini, weak, immune)
-            armies[id] = g
+            g = Group(id, army, units, hp, atk, idType(typ), ini, weak, immune)
+            push!(armies, g)
+            @assert g.id == length(armies)
         end
     end
-    (armies,id)
+    (armies, id)
+end
+
+function damage(armies, targets, atk, idDef)
+    def = @inbounds armies[idDef]
+    def.army == atk.army  && return (0,0,0,0)
+    idDef   in targets    && return (0,0,0,0)
+    atk.typ in def.immune && return (0,0,0,0)
+    def.units == 0        && return (0,0,0,0)
+
+    dmg = atk.units*atk.atk
+    if atk.typ in def.weak
+        dmg *= 2
+    end
+
+    (dmg,
+     def.units*def.atk,
+     def.ini,
+     idDef)
 end
 
 function battle(armies, N)
-    dmg_(atk, idDef) = let def = armies[idDef]
-        def.army == atk.army  && return (0,0,0,0)
-        idDef   in targets    && return (0,0,0,0)
-        atk.typ in def.immune && return (0,0,0,0)
-        def.units == 0        && return (0,0,0,0)
-
-        dmg = atk.units*atk.atk
-        if atk.typ in def.weak
-            dmg *= 2
-        end
-        (dmg,
-         def.units*def.atk,
-         def.ini,
-         idDef)
-    end
-
     attacks = Dict{Int, Int}()
     targets = Int[]
 
@@ -78,14 +93,19 @@ function battle(armies, N)
         units_last = units
 
         # Target selection
-        for idAtk in sort(1:N; by=id->let g = armies[id]
+        for idAtk in sort(1:N; by=id -> let g = @inbounds armies[id]
                           (-g.units*g.atk, -g.ini)
                           end)
             atk = armies[idAtk]
             attacks[idAtk] = 0
             atk.units == 0 && continue
 
-            (dmg,_,_,idDef) = maximum(dmg_(atk, idDef) for idDef in 1:N)
+            m = (0,0,0,0)
+            for idDef in 1:N
+                dmg = damage(armies, targets, atk, idDef)
+                m = max(m, dmg)
+            end
+            (dmg,_,_,idDef) = m
 
             if dmg > 0
                 push!(targets, idDef)
@@ -99,7 +119,7 @@ function battle(armies, N)
             atk = armies[idAtk]
             (idDef = attacks[idAtk]) == 0 && continue
 
-            (dmg,_,_,_) = dmg_(atk, idDef)
+            (dmg,_,_,_) = damage(armies, targets, atk, idDef)
             def = armies[idDef]
             kills = min(div(dmg, def.hp), def.units)
             def.units -= kills
