@@ -1,5 +1,5 @@
 module Day22
-export part1, part2, puzzle, @dbg
+export part1, part2, puzzle
 
 using Lazy
 using DataStructures
@@ -37,20 +37,17 @@ function puzzle(depth, xT, yT)
 
     # Find shortest path
     dist = typemax(Int64) * ones(Int64, size(lvl,1), size(lvl,2), 3)
-    l = Deque{Tuple{Int64, Int64, Int64}}()
-    push!(l, (1,1,1))
+    l = PriorityQueue((1,1,1)=>0)
     dist[1,1,1] = 0
 
     M = size(dist, 1)
-    N  =size(dist, 2)
+    N = size(dist, 2)
 
     while !isempty(l)
-        (i,j,t) = popfirst!(l)
-        dist[i,j,t]+abs(yT+1-i)+abs(xT+1-j)+(t!=1 ? 7 : 0) > dist[yT+1,xT+1,1] &&
-            continue
+        (i,j,t) = dequeue!(l)
+        (i,j,t) == (yT+1,xT+1,1) && break
 
         for (ii,jj,tt) in Iterators.product(i-1:i+1, j-1:j+1, 1:3)
-
             # Ignore regions which are out of bounds
             (ii<1 || jj<1 || ii>M || jj>N) && continue
 
@@ -59,10 +56,8 @@ function puzzle(depth, xT, yT)
             dd > 1 && continue
 
             # The chosen tool must be compatible with both the origin and destination
-            lvl1 = @inbounds lvl[ii,jj]
-            (tt-lvl1)%3==0 && continue
-            lvl1 = @inbounds lvl[i,j]
-            (tt-lvl1)%3==0 && continue
+            (tt-lvl[i,j])   % 3 == 0 && continue
+            (tt-lvl[ii,jj]) % 3 == 0 && continue
 
             # New distance
             d = dist[i,j,t] + dd
@@ -73,7 +68,7 @@ function puzzle(depth, xT, yT)
             # Update if necessary
             if d<dist[ii,jj,tt]
                 dist[ii,jj,tt] = d
-                push!(l, (ii,jj,tt))
+                l[(ii,jj,tt)] = d + abs(yT+1-ii) + abs(xT+1-jj) + (tt==1 ? 0 : 7)
             end
         end
     end
