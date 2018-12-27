@@ -11,7 +11,7 @@ function puzzle(depth, xT, yT)
     margin = 25
 
     # Compute erosion level
-    lvl = Array{Int32, 2}(undef, yT+margin, xT+margin)
+    lvl = Array{Int64, 2}(undef, yT+margin, xT+margin)
     lvl[1,1] = level(0, depth)
     for j in 2:size(lvl,2)
         lvl[1,j] = level((j-1) * 16807, depth)
@@ -36,31 +36,33 @@ function puzzle(depth, xT, yT)
 
 
     # Find shortest path
-    dist = typemax(Int32) * ones(Int32, size(lvl,1), size(lvl,2), 3)
-    l = Deque{Tuple{Int32, Int32, Int32}}()
+    dist = typemax(Int64) * ones(Int64, size(lvl,1), size(lvl,2), 3)
+    l = Deque{Tuple{Int64, Int64, Int64}}()
     push!(l, (1,1,1))
     dist[1,1,1] = 0
 
+    M = size(dist, 1)
+    N  =size(dist, 2)
+
     while !isempty(l)
         (i,j,t) = popfirst!(l)
-
-        dist[i,j,t] > dist[yT+1,xT+1,1] && continue
+        dist[i,j,t]+abs(yT+1-i)+abs(xT+1-j)+(t!=1 ? 7 : 0) > dist[yT+1,xT+1,1] &&
+            continue
 
         for (ii,jj,tt) in Iterators.product(i-1:i+1, j-1:j+1, 1:3)
 
             # Ignore regions which are out of bounds
-            (ii<1 || jj<1
-             || ii>size(dist,1)
-             || jj>size(dist,2)) && continue
+            (ii<1 || jj<1 || ii>M || jj>N) && continue
 
             # Ignore regions in diagonal
             dd = abs(ii-i)+abs(jj-j)
             dd > 1 && continue
 
             # The chosen tool must be compatible with both the origin and destination
-            if tt%3 in [lvl[ii,jj]%3, lvl[i,j]%3]
-                continue
-            end
+            lvl1 = @inbounds lvl[ii,jj]
+            (tt-lvl1)%3==0 && continue
+            lvl1 = @inbounds lvl[i,j]
+            (tt-lvl1)%3==0 && continue
 
             # New distance
             d = dist[i,j,t] + dd
@@ -76,7 +78,7 @@ function puzzle(depth, xT, yT)
         end
     end
 
-    part2 = dist[yT+1, xT+1,1]
+    part2 = dist[yT+1, xT+1, 1]
 
     (part1, part2)
 end
